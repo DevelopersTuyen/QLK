@@ -1,0 +1,15 @@
+ng generate service service/home/home
+
+phiếu xuất kho
+ng generate component warehouseSlips
+khách hàng
+ng generate component customerManagement
+công nợ
+ng generate component debtManagement
+doanh số
+ng generate component salesManagement
+nhà cung cấp
+ng generate component supplierManagement
+
+
+npm install @ng-select/ng-select

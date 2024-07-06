@@ -1,0 +1,143 @@
+<div class="content">
+    <div class="row">
+        <div class="col-xl-3">
+            <h1>Quản lý tài khoản</h1>
+        </div>
+        
+        <div class="col-xl-6">
+            <input type="text" class="form-control" placeholder="Tìm kiếm..." [(ngModel)]="searchKeyword" (input)="searchUsers()">
+        </div>
+        
+        <div class="col-xl-3">
+            <button class="btn btn-primary" data-toggle="modal" data-target="#formAdd">Thêm mới tài khoản</button>
+        </div>
+    </div>
+    <div *ngIf="users.length > 0; else noUsers">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Tài khoản </th>
+                    <th>Họ và Tên</th>
+                    <th>Email</th>
+                    <th>Chức vụ</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let user of users">
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.name }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>
+                        <span *ngIf="user.level === 2">Nhân viên bán hàng</span>
+                        <span *ngIf="user.level === 3">Nhân viên kho</span>
+                        <span *ngIf="user.level !== 2 && user.level !== 3">Unknown</span>
+                    </td>
+                    <td>
+                        <button class="btn btn-primary" data-toggle="modal" data-target="#formEdit" (click)="selectUser(user)">Sửa</button>
+                        <button class="btn btn-danger"(click)="deleteUser(user.id)">Xoá</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <ng-template #noUsers>
+        <p>No users available.</p>
+    </ng-template>
+</div>
+
+<!-- thêm mới tài khoản -->
+<div class="modal" id="formAdd">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">Thêm mới tài khoản</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <!-- Modal body -->
+            <div class="modal-body">
+                <form #addUserForm="ngForm">
+                    <div class="form-group">
+                      <label for="newUsername">Tài khoản:</label>
+                      <input type="text" class="form-control" id="newUsername" [(ngModel)]="newUser.username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="newName">Họ và Tên:</label>
+                      <input type="text" class="form-control" id="newName" [(ngModel)]="newUser.name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="newEmail">Email:</label>
+                      <input type="email" class="form-control" id="newEmail" [(ngModel)]="newUser.email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="newLevel">Cấp bậc:</label>
+                      <select class="form-control" id="newLevel" [(ngModel)]="newUser.level" name="level" required>
+                        <option [value]="2">Nhân viên bán hàng</option>
+                        <option [value]="3">Nhân viên kho</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="newPassword">Mật khẩu:</label>
+                      <input type="password" class="form-control" id="newPassword" [(ngModel)]="newUser.password" name="password" required>
+                    </div>
+                  </form>
+            </div>
+
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" (click)="addNewUser()">Thêm mới</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- sửa tài khoản -->
+<div class="modal" id="formEdit">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h4 class="modal-title">Sửa tài khoản</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        
+        <!-- Modal body -->
+        <div class="modal-body">
+          <form *ngIf="selectedUser">
+            <div class="form-group">
+              <label for="username">Tài khoản:</label>
+              <input type="text" class="form-control" id="username" [(ngModel)]="selectedUser.username" name="username" >
+            </div>
+            <div class="form-group">
+              <label for="name">Họ và Tên:</label>
+              <input type="text" class="form-control" id="name" [(ngModel)]="selectedUser.name" name="name">
+            </div>
+            <div class="form-group">
+              <label for="email">Email:</label>
+              <input type="email" class="form-control" id="email" [(ngModel)]="selectedUser.email" name="email">
+            </div>
+            <div class="form-group">
+              <label for="level">Chức vụ:</label>
+              <select class="form-control" id="level" [(ngModel)]="selectedUser.level" name="level">
+                <option [value]="2">Nhân viên bán hàng</option>
+                <option [value]="3">Nhân viên kho</option>
+              </select>
+            </div>
+          </form>
+        </div>
+        
+        <!-- Modal footer -->
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-dismiss="modal">Đóng</button>
+          <button type="button" class="btn btn-primary" (click)="saveChanges()">Lưu thay đổi</button>
+        </div>
+        
+      </div>
+    </div>
+  </div>

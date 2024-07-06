@@ -1,0 +1,337 @@
+<div class="content">
+    <div class="row">
+        <div class="col-xl-3">
+            <h1>Quản lý Kho và lưu kho</h1>
+            <button class="btn btn-primary" data-toggle="modal" data-target="#formViewProduct">Xem danh sách sản phẩm</button>
+        </div>
+        
+        <div class="col-xl-6">
+            <input type="text" class="form-control" placeholder="Tìm kiếm..." [(ngModel)]="searchKeyword" (input)="searchWarehouse()">
+        </div>
+        
+        <div class="col-xl-3">
+            <button class="btn btn-primary" data-toggle="modal" data-target="#formAdd">Thêm mới kho hàng</button>
+            <button class="btn btn-success" data-toggle="modal" data-target="#formAddProducts">Thêm sản phẩm vào kho</button>
+        </div>
+    </div>
+    <div *ngIf="warehouses.length > 0; else noWarehouses">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Tên </th>
+                    <th>Vị trí</th>
+                    <th>Sức chứa</th>
+                    <th>Tổng sản phẩm</th>
+                    <th>Sản phẩm</th>
+                    <th>Người tạo</th>
+                    <th>Ngày tạo</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let warehouse of warehouses">
+                    <td>{{ warehouse.name }}</td>
+                    <td>{{ warehouse.location }}</td>
+                    <td>{{ warehouse.capacity }}</td>
+                    <td>
+                        {{ getProductCount(warehouse.product_code) }}
+                    </td>
+                    
+                    <!-- <td>{{ warehouse.product_code }}</td> -->
+                    <td [innerHTML]="getProductNamesByIds(warehouse.product_code)"></td>
+                    <td>{{ warehouse.created_by }}</td>
+                    <td>{{ warehouse.created_at }}</td>
+                    <td>
+                        <button class="btn btn-primary" data-toggle="modal" data-target="#formEdit" (click)="selectWarehouse(warehouse)">Sửa</button>
+                        <button class="btn btn-danger"(click)="deleteWarehouse(warehouse.id)">Xoá</button>
+                        <button class="btn btn-success"(click)="deleteWarehouse(warehouse.id)">Xem chi tiết</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <ng-template #noWarehouses>
+        <p>No Warehouses available.</p>
+    </ng-template>
+</div>
+
+<!-- thêm mới kho -->
+<div class="modal" id="formAdd">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">Thêm mới kho hàng</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <!-- Modal body -->
+            <div class="modal-body">
+                <form #addUserForm="ngForm">
+                    <div class="form-group">
+                      <label for="newname">Tên kho hàng</label>
+                      <input type="text" class="form-control" id="newname" [(ngModel)]="newWarehouse.name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="newlocation">Vị trí</label>
+                      <input type="text" class="form-control" id="newlocation" [(ngModel)]="newWarehouse.location" name="location" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="newcapacity">Sức chứa</label>
+                      <input type="number" class="form-control" id="newcapacity" [(ngModel)]="newWarehouse.capacity" name="capacity" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="created_by">Người tạo</label>
+                        <input type="text" class="form-control" id="created_by" [(ngModel)]="newWarehouse.created_by"  name="created_by" readonly required>
+                    </div>
+                    <div class="form-group">
+                        <label for="created_by">Thêm Sản phẩm</label>
+                        <select multiple class="form-control" id="warehouses" [(ngModel)]="selectedAddProductToWarehouses" [ngModelOptions]="{ standalone: true }" required>
+                            <option *ngFor="let product of products" [value]="product.id">
+                                {{ product.name }}
+                            </option>
+                        </select>
+                    </div>
+                  </form>
+            </div>
+
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" (click)="addNewWarehouse()">Thêm mới</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- sửa kho -->
+<div class="modal" id="formEdit">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h4 class="modal-title">Sửa thông tin kho</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        
+        <!-- Modal body -->
+        <div class="modal-body">
+          <form *ngIf="selectedWarehouses">
+            <div class="form-group">
+              <label for="name">Tên kho</label>
+              <input type="text" class="form-control" id="name" [(ngModel)]="selectedWarehouses.name" name="name" >
+            </div>
+            <div class="form-group">
+              <label for="location">Vị trí </label>
+              <input type="text" class="form-control" id="location" [(ngModel)]="selectedWarehouses.location" name="location">
+            </div>
+            <div class="form-group">
+              <label for="capacity">Sức chứa</label>
+              <input type="number" class="form-control" id="capacity" [(ngModel)]="selectedWarehouses.capacity" name="capacity">
+            </div>
+            <div class="form-group">
+                <label for="created_by">Sản phẩm thuộc kho</label>
+                <select multiple class="form-control" id="warehouses" [(ngModel)]="selectedProductIds" name="warehouses" required>
+                    <option *ngFor="let product of products" [value]="product.id" [selected]="selectedProductIds.includes(product.id)">
+                        {{ product.name }}
+                    </option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="created_by">Người tạo</label>
+                <input type="text" class="form-control" id="created_by" [(ngModel)]="selectedWarehouses.created_by"  name="created_by" readonly required>
+            </div>
+          </form>
+        </div>
+        
+        <!-- Modal footer -->
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-dismiss="modal">Đóng</button>
+          <button type="button" class="btn btn-primary" (click)="saveChanges()">Lưu thay đổi</button>
+        </div>
+        
+      </div>
+    </div>
+</div>
+
+
+  <!-- thêm mới sản phẩm -->
+<div class="modal" id="formAddProducts">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">Thêm mới sản phẩm</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <!-- Modal body -->
+            <div class="modal-body">
+                <form #addUserForm="ngForm">
+                    <div class="form-group">
+                      <label for="newname">Tên sản phẩm</label>
+                      <input type="text" class="form-control" id="newname" [(ngModel)]="newProducts.name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="newdescription">Mô tả</label>
+                      <input type="text" class="form-control" id="newdescription" [(ngModel)]="newProducts.description" name="description" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="newimport_price">Giá nhập</label>
+                      <input type="number" class="form-control" id="newimport_price" [(ngModel)]="newProducts.import_price" name="import_price" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newselling_price">Giá bán</label>
+                        <input type="number" class="form-control" id="newselling_price" [(ngModel)]="newProducts.selling_price" name="selling_price" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newcategory">Thể loại</label>
+                        <input type="number" class="form-control" id="newcategory" [(ngModel)]="newProducts.category" name="category" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="warehouse">Chọn kho:</label>
+                        <select class="form-control" id="warehouse_id" [(ngModel)]="selectedProductToWarehouses" [ngModelOptions]="{ standalone: true }" multiple required>
+                            <option *ngFor="let warehouse of warehouses" [value]="warehouse.id">{{ warehouse.name }}</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="created_by">Người tạo</label>
+                        <input type="text" class="form-control" id="created_by" [(ngModel)]="newProducts.created_by"  name="created_by" readonly required>
+                    </div>
+                  </form>
+            </div>
+
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" (click)="addNewProducts()">Thêm mới</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- Xem sản phẩm  -->
+<div class="modal" id="formViewProduct">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">Danh sách sản phẩm</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <!-- Modal body -->
+            <div class="modal-body">
+                <div>
+                    <input type="text" class="form-control" placeholder="Tìm kiếm..." [(ngModel)]="searchKeywordProduct" (input)="searchProduct()">
+                </div>
+                <div *ngIf="products.length > 0; else noProducts">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Tên sản phẩm </th>
+                                <th>Mô tả</th>
+                                <th>Giá nhập</th>
+                                <th>Giá bán</th>
+                                <th>Danh mục</th>
+                                <th>Thuộc kho</th>
+                                <th>Người tạo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let product of products">
+                                <td>{{ product.name }}</td>
+                                <td>{{ product.description }}</td>
+                                <td>{{ product.import_price }}</td>
+                                <td>{{ product.selling_price }}</td>
+                                <td>{{ product.category }}</td>
+                                <td [innerHTML]="getWarehouseNamesByIds(product.warehouse_id)"></td>
+                                <td>{{ product.created_by }}</td>
+                                <td>
+                                    <button class="btn btn-primary" data-toggle="modal" data-target="#formEditProduct" (click)="selectProduct(product)">Sửa</button>
+                                    <button class="btn btn-danger"(click)="deleteProduct(product.id)">Xoá</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <ng-template #noProducts>
+                    <p>No Products available.</p>
+                </ng-template>
+            </div>
+
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Đóng</button>
+                
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- sửa sản phẩm -->
+<div class="modal" id="formEditProduct">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h4 class="modal-title">Sửa thông tin kho</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        
+        <!-- Modal body -->
+        <div class="modal-body">
+          <form *ngIf="selectedProduct">
+            <div class="form-group">
+              <label for="name">Tên sản phẩm</label>
+              <input type="text" class="form-control" id="name" [(ngModel)]="selectedProduct.name" name="name" >
+            </div>
+            <div class="form-group">
+              <label for="description">Mô tả </label>
+              <input type="text" class="form-control" id="description" [(ngModel)]="selectedProduct.description" name="description">
+            </div>
+            <div class="form-group">
+              <label for="import_price">Giá nhập</label>
+              <input type="text" class="form-control" id="import_price" [(ngModel)]="selectedProduct.import_price" name="import_price">
+            </div>
+            <div class="form-group">
+                <label for="selling_price">Giá bán</label>
+                <input type="text" class="form-control" id="selling_price" [(ngModel)]="selectedProduct.selling_price"  name="selling_price" required>
+            </div>
+            <div class="form-group">
+                <label for="category">Danh mục</label>
+                <input type="text" class="form-control" id="category" [(ngModel)]="selectedProduct.category"  name="category"  required>
+            </div>
+            <div class="form-group">
+                <label for="created_by">Thuộc kho</label>
+                <select multiple class="form-control" id="warehouses" [(ngModel)]="selectedWarehouseIds" (ngModelChange)="onWarehouseChange($event)" name="warehouses" required>
+                    <option *ngFor="let warehouse of warehouses" [value]="warehouse.id" [selected]="selectedWarehouseIds.includes(warehouse.id)">
+                        {{ warehouse.name }}
+                    </option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="created_by">Người tạo</label>
+                <input type="text" class="form-control" id="created_by" [(ngModel)]="selectedProduct.created_by"  name="created_by" required>
+            </div>
+          </form>
+        </div>
+        
+        <!-- Modal footer -->
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-dismiss="modal">Đóng</button>
+          <button type="button" class="btn btn-primary" (click)="saveChangesProducts()">Lưu thay đổi</button>
+        </div>
+        
+      </div>
+    </div>
+</div>

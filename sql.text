@@ -1,0 +1,92 @@
+CREATE TABLE `user` (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL,
+    password VARCHAR(50) NOT NULL,
+    email VARCHAR(100),
+    level INT
+    created_at TIMESTAMP,
+);
+
+CREATE TABLE `menu` (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(200) NOT NULL,
+    link VARCHAR(200) NOT NULL,
+    created_at TIMESTAMP,
+);
+
+
+CREATE TABLE warehouse (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    location VARCHAR(255),
+    capacity INT,
+    product_code TEXT
+    created_by VARCHAR(50),
+    created_at TIMESTAMP 
+);
+
+Giải thích các trường trong bảng warehouse:
+
+id: Một số nguyên tự động tăng, là khóa chính của bảng.
+name: Tên của kho hàng, là một chuỗi không được để trống.
+location: Địa điểm của kho hàng, là một chuỗi có thể để trống.
+capacity: Sức chứa của kho hàng, là một số nguyên.
+created_at: Thời điểm tạo bản ghi, mặc định là thời điểm hiện tại.
+
+
+CREATE TABLE products (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    import_price DECIMAL(10, 2) NOT NULL,
+    selling_price DECIMAL(10, 2) NOT NULL,
+    category VARCHAR(50),
+    warehouse_id VARCHAR(100),
+    created_by VARCHAR(50),
+    created_at TIMESTAMP 
+);
+
+
+
+-- Tạo bảng warehouse
+CREATE TABLE warehouse (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    location VARCHAR(255),
+    capacity INT,
+    created_by VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tạo bảng products
+CREATE TABLE products (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    import_price DECIMAL(10, 2) NOT NULL,
+    selling_price DECIMAL(10, 2) NOT NULL,
+    category VARCHAR(50),
+    created_by VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tạo bảng trung gian warehouse_products
+CREATE TABLE warehouse_products (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    warehouse_id INT NOT NULL,
+    product_id INT NOT NULL,
+    FOREIGN KEY (warehouse_id) REFERENCES warehouse(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY (warehouse_id, product_id) -- Đảm bảo không có trùng lặp trong mối quan hệ
+);
+
+Giải thích các trường trong bảng products:
+
+id: Một số nguyên tự động tăng, là khóa chính của bảng.
+name: Tên của sản phẩm, là một chuỗi không được để trống.
+description: Mô tả chi tiết về sản phẩm, có thể là một đoạn văn bản dài.
+price: Giá của sản phẩm, được lưu dưới dạng số thập phân với 2 chữ số sau dấu phẩy.
+category: Danh mục của sản phẩm, là một chuỗi.
+created_at: Thời điểm tạo bản ghi, mặc định là thời điểm hiện tại.
+
